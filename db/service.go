@@ -3,14 +3,16 @@ package db
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/biffjutsu/dbdoc/config"
+	"github.com/pkg/errors"
+
 	// I be the driver
 	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/jmoiron/sqlx"
 )
 
-const dbstring = "server=%s;database=%s;Trusted_Connection=True;Application Name=db-doc"
+const trusteddbstring = "server=%s;database=%s;Trusted_Connection=True;app=db-doc"
+const creddbstring = "server=%s;database=%s;uid=%s;password=%s;app=db-doc"
 
 // SchemaService ...
 // Encapsulates data retrieval pieces.
@@ -24,10 +26,21 @@ type SchemaService interface {
 // New ...
 // Creates a new schema data service.
 func New(o config.Options) (SchemaService, error) {
-	db, err := sqlx.Connect("mssql", fmt.Sprintf(dbstring, o.Server, o.Database))
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not connect to %s.%s", o.Server, o.Database)
+	var db *sqlx.DB
+	var err error
+
+	if o.Credentials == nil {
+		db, err = sqlx.Connect("mssql", fmt.Sprintf(trusteddbstring, o.Server, o.Database))
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not connect to %s.%s", o.Server, o.Database)
+		}
+	} else {
+		db, err = sqlx.Connect("mssql", fmt.Sprintf(creddbstring, o.Server, o.Database, o.Credentials.Username, o.Credentials.Password))
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not connect to %s.%s with user %s", o.Server, o.Database, o.Credentials.Username)
+		}
 	}
+
 	return &sqlService{db}, nil
 }
 
