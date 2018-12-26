@@ -4,8 +4,10 @@ import (
 	"github.com/guregu/null"
 )
 
+// Table ...
 type Table = string
 
+// Column ...
 type Column struct {
 	Table      string      `db:"TABLE_NAME"`
 	Name       string      `db:"COLUMN_NAME"`
@@ -16,6 +18,7 @@ type Column struct {
 	IsIdentity bool        `db:"IS_IDENTITY"`
 }
 
+// Constraint ...
 type Constraint struct {
 	Name              string      `db:"CONSTRAINT_NAME"`
 	Type              string      `db:"CONSTRAINT_TYPE"`
